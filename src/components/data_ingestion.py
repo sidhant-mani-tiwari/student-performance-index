@@ -69,7 +69,7 @@ class DataIngestion:
             datapath = basedir / "notebook" / "data" / "stud.csv"
 
             df = pd.read_csv(datapath)
-            logging.info("Read the dataset as dataframe")
+            logging.info(f"Dataset read succesfully -- Data shape: {df.shape}")
 
             # --------------------------------------------------
             # DIRECTORY CREATION — Phase 2, Module 4
@@ -94,7 +94,7 @@ class DataIngestion:
 
             # Split data → 80% train, 20% test, reproducible via random_state
             train_set, test_set = train_test_split(df, test_size=0.2, random_state=42)
-
+            logging.info(f"Train shape: {train_set.shape} | Test shape: {test_set.shape}")
             # Save both splits into artifacts/ as checkpoints (Module 11)
             train_set.to_csv(self.ingestion_config.train_data_path, index=False, header=True)
             test_set.to_csv(self.ingestion_config.test_data_path,  index=False, header=True)
@@ -119,5 +119,7 @@ class DataIngestion:
             raise CustomException(e, sys) # type: ignore
 
 if __name__ == "__main__":
-    obj = DataIngestion()
-    obj.initiate_data_ingestion()
+    ingestion = DataIngestion()
+    train_path, test_path = ingestion.initiate_data_ingestion()
+    print(f"Train: {train_path}")
+    print(f"Test: {test_path}")

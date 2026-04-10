@@ -17,8 +17,10 @@ def error_message_details(error, error_details:sys): # type: ignore
     # extracting the line number
     line_number = exc_tb.tb_lineno # type: ignore
     
-    error_message = "Error occoured in python script: [{0}] at line number: [{1}] with error message: [{2}]".format(
-        filename, line_number, str(error)
+    error_message = (
+        f"Error occurred in script: [{filename}] "
+        f"at line number: [{line_number}] "
+        f"with message: [{str(error)}]"
     )
     return error_message
 
@@ -30,6 +32,6 @@ class CustomException(Exception):
     def __init__(self, error_message, error_details:sys): # type: ignore
         super().__init__(error_message)
         self.error_message = error_message_details(error_message, error_details=error_details)
-        
+        logging.error(self.error_message)
     def __str__(self):
         return self.error_message
