@@ -103,10 +103,8 @@ class DataIngestion:
 
             # Return paths (not dataframes) so the next pipeline
             # step (DataTransformation) knows where to read from
-            return (
-                self.ingestion_config.train_data_path,
-                self.ingestion_config.test_data_path
-            )
+            return self.ingestion_config.train_data_path, self.ingestion_config.test_data_path
+            
 
         except Exception as e:
             # --------------------------------------------------

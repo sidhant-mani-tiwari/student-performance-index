@@ -219,11 +219,7 @@ class DataTransformation:
 
             # Return transformed arrays for ModelTrainer
             # and the path so the pipeline knows where preprocessor lives
-            return (
-                train_arr,
-                test_arr,
-                self.transformation_config.preprocessor_path,
-            )
+            return self.transformation_config.preprocessor_path, train_arr, test_arr
 
         except Exception as e:
             raise CustomException(e, sys) # type: ignore
