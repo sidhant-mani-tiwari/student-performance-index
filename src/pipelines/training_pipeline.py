@@ -9,6 +9,7 @@ from src.logger import logging
 class TrainingPipeline:
     def run_pipeline(self):
         try:
+            print("Inside training pipeline")
             # Step 1: Data Ingestion
             ingestion = DataIngestion()
             train_path, test_path = ingestion.initiate_data_ingestion()
@@ -27,3 +28,8 @@ class TrainingPipeline:
             return r2_score
         except Exception as e:
             raise CustomException(e, sys) # type: ignore 
+
+if __name__ == "__main__":
+    pipeline = TrainingPipeline()
+    r2_score = pipeline.run_pipeline()
+    print(f"Training complete. Final R2 Score: {r2_score:.4f}")

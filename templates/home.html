@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Notebook to Production — Student Performance ML</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#faf8f5;--sf:#ffffff;--sf2:#f5f0eb;
+  --bd:rgba(208,125,50,0.15);--bdh:rgba(208,125,50,0.4);
+  --ac:#d0693a;--acb:#b85a2e;--acg:rgba(208,105,58,0.1);
+  --tx:#1a1410;--mt:#6b5a4e;--dm:#b8a99a;
+  --mono:'DM Mono',monospace;--disp:'Syne',sans-serif;
+  --c1:#c2410c;--c2:#d0693a;--c3:#b45309;--c4:#92400e;--c5:#15803d;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--tx);font-family:var(--mono);font-size:15px;line-height:1.75;overflow-x:hidden;}
+#gc{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+.z{position:relative;z-index:1;}
+
+/* SPOTLIGHT CARD */
+.sc{position:relative;border-radius:20px;border:1px solid var(--bd);background:var(--sf);overflow:hidden;transition:border-color 0.3s;}
+.sc:hover{border-color:var(--bdh);}
+.scg{pointer-events:none;position:absolute;inset:0;opacity:0;transition:opacity 0.4s ease;border-radius:inherit;}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;}
+.ey{font-size:11px;letter-spacing:0.25em;color:var(--acb);text-transform:uppercase;margin-bottom:2rem;opacity:0;animation:fu 0.8s ease 0.2s forwards;}
+h1{font-family:var(--disp);font-size:clamp(2.8rem,7vw,5.5rem);font-weight:800;line-height:1.05;letter-spacing:-0.02em;margin-bottom:1.5rem;opacity:0;animation:fu 0.8s ease 0.4s forwards;}
+h1 .gr{display:block;background:linear-gradient(135deg,#d0693a,#e8834a,#b45309);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hs{max-width:520px;color:var(--mt);font-size:14px;line-height:1.85;margin-bottom:2.5rem;opacity:0;animation:fu 0.8s ease 0.6s forwards;}
+.hq{font-style:italic;color:var(--dm);font-size:13px;border-left:2px solid var(--ac);padding-left:1rem;text-align:left;max-width:420px;line-height:1.8;opacity:0;animation:fu 0.8s ease 0.8s forwards;}
+.shi{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--dm);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;opacity:0;animation:fu 0.8s ease 1.2s forwards;}
+.shb{width:1px;height:40px;background:linear-gradient(to bottom,var(--ac),transparent);animation:sp 2s ease infinite;}
+
+/* SKIP */
+#skip{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:100;background:rgba(208,105,58,0.1);border:1px solid var(--bdh);color:var(--acb);font-family:var(--mono);font-size:11px;letter-spacing:0.12em;padding:9px 22px;border-radius:100px;cursor:pointer;backdrop-filter:blur(16px);transition:all 0.25s ease;text-decoration:none;display:inline-block;}
+#skip:hover{background:rgba(208,105,58,0.2);transform:translateX(-50%) translateY(-2px);}
+
+/* LAYOUT */
+.wrap{max-width:880px;margin:0 auto;padding:6rem 2rem;}
+.divider{width:100%;height:1px;background:linear-gradient(to right,transparent,var(--bdh),transparent);max-width:880px;margin:0 auto;}
+
+/* PHASE HEADER */
+.ph{display:flex;align-items:flex-start;gap:1.5rem;margin-bottom:3rem;}
+.pn{font-family:var(--disp);font-size:clamp(4rem,8vw,7rem);font-weight:800;line-height:0.9;opacity:0.07;flex-shrink:0;letter-spacing:-0.04em;}
+.pm{padding-top:0.4rem;}
+.pt{font-size:10px;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:0.4rem;}
+.pti{font-family:var(--disp);font-size:clamp(1.6rem,3vw,2.3rem);font-weight:700;line-height:1.1;margin-bottom:0.4rem;}
+.ps2{color:var(--mt);font-size:13px;font-style:italic;}
+.si{font-family:var(--disp);font-size:clamp(1rem,2vw,1.1rem);font-weight:600;color:var(--mt);margin-bottom:2.5rem;padding-bottom:1rem;border-bottom:1px solid var(--bd);}
+
+/* MODULE GRID */
+.mg{display:grid;gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:16px;overflow:hidden;margin-bottom:1.5rem;}
+.mc{background:var(--sf);padding:1.5rem;transition:background 0.2s;}
+.mc:hover{background:var(--sf2);}
+.mn{font-size:10px;letter-spacing:0.2em;color:var(--dm);margin-bottom:0.4rem;}
+.mna{font-family:var(--disp);font-size:15px;font-weight:600;margin-bottom:0.4rem;}
+.md{font-size:12px;color:var(--mt);line-height:1.65;}
+
+/* CODE */
+.cw{margin:1.5rem 0;}
+.cl{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--dm);margin-bottom:0.5rem;padding-left:2px;}
+pre{background:#fdf6f0;border:1px solid var(--bd);border-radius:12px;padding:1.2rem 1.4rem;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.8;color:#5c3d2e;}
+.cm{color:#c9a98a;font-style:italic;}
+.kw{color:#c2410c;}
+.fn{color:#d0693a;}
+.st{color:#15803d;}
+.nm{color:#b45309;}
+.ok{color:#15803d;}
+.er{color:#dc2626;}
+
+/* CONCEPT BLOCKS */
+.cb{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:1.5rem 1.75rem;margin-bottom:1rem;transition:border-color 0.2s;}
+.cb:hover{border-color:var(--bdh);}
+.cbl{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dm);margin-bottom:0.5rem;}
+.cbh{font-family:var(--disp);font-size:16px;font-weight:600;margin-bottom:0.5rem;}
+.cbb{font-size:13px;color:var(--mt);line-height:1.7;}
+
+.principle{border-left:2px solid var(--ac);padding:0.9rem 1.25rem;background:rgba(208,105,58,0.06);border-radius:0 10px 10px 0;margin:1.5rem 0;font-size:13px;color:var(--mt);font-style:italic;line-height:1.8;}
+
+/* PIPELINE */
+.pipe{display:flex;align-items:center;padding:1.75rem 1.5rem;background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow-x:auto;margin:2rem 0;gap:0;}
+.pip{flex-shrink:0;text-align:center;padding:0.6rem 1rem;background:var(--sf2);border:1px solid var(--bdh);border-radius:8px;min-width:108px;}
+.pipl{font-size:9px;color:var(--dm);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;}
+.pipn{font-family:var(--disp);font-size:12px;font-weight:600;}
+.pia{color:var(--dm);font-size:14px;padding:0 0.4rem;flex-shrink:0;}
+
+/* SCORES */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin:2rem 0;}
+.sca{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:1rem 1.1rem;transition:border-color 0.2s;}
+.sca.wi{border-color:var(--ac);background:rgba(208,105,58,0.07);}
+.smo{font-size:11px;color:var(--mt);margin-bottom:3px;}
+.sva{font-family:var(--disp);font-size:22px;font-weight:700;}
+.sba{height:2px;background:var(--bd);border-radius:2px;margin-top:7px;overflow:hidden;}
+.sfi{height:100%;border-radius:2px;background:var(--ac);}
+.sca.wi .sfi{background:var(--acb);}
+.sbad{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--acb);margin-top:4px;}
+
+/* ARTIFACTS */
+.ar{display:flex;align-items:center;gap:1rem;padding:0.7rem 0;border-bottom:1px solid var(--bd);font-size:13px;}
+.ar:last-child{border-bottom:none;}
+.ai{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.an{color:var(--acb);flex:1;font-family:var(--mono);font-size:12px;}
+.ad{color:var(--mt);font-size:11px;}
+
+/* PROOF SECTION */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem;}
+@media(max-width:640px){.pgrid{grid-template-columns:1fr;}}
+
+/* FORM */
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+@media(max-width:480px){.fg2{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:5px;}
+label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dm);}
+select,input[type=number]{background:#fdf6f0;border:1px solid var(--bdh);color:var(--tx);font-family:var(--mono);font-size:12px;padding:9px 11px;border-radius:8px;outline:none;width:100%;transition:border-color 0.2s;-webkit-appearance:none;}
+select:focus,input[type=number]:focus{border-color:var(--ac);}
+select option{background:#ffffff;}
+.btn{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:0.08em;padding:10px 20px;border-radius:8px;text-decoration:none;transition:all 0.2s ease;cursor:pointer;border:none;width:100%;text-align:center;}
+.btn-p{background:var(--ac);color:white;}
+.btn-p:hover{background:#b85a2e;}
+.btn-o{background:transparent;border:1px solid var(--bdh);color:var(--acb);}
+.btn-o:hover{background:var(--acg);}
+.rb{display:none;text-align:center;padding:1.5rem;background:rgba(21,128,61,0.06);border:1px solid rgba(21,128,61,0.25);border-radius:10px;margin-top:1rem;}
+.rb.on{display:block;}
+.rl{font-size:10px;letter-spacing:0.15em;color:#15803d;text-transform:uppercase;margin-bottom:4px;}
+.rv{font-family:var(--disp);font-size:3rem;font-weight:800;color:#15803d;}
+.rs{font-size:11px;color:var(--mt);margin-top:3px;}
+
+code{font-family:var(--mono);font-size:12px;background:rgba(208,105,58,0.08);border:1px solid rgba(208,105,58,0.2);padding:1px 5px;border-radius:4px;color:var(--ac);}
+
+@keyframes fu{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+@keyframes sp{0%,100%{opacity:0.3;}50%{opacity:1;}}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity 0.65s ease,transform 0.65s ease;}
+.reveal.on{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<a href="#proof" id="skip">skip to prediction →</a>
+
+<!-- HERO -->
+<section id="hero" class="z">
+  <p class="ey">Student Performance Index · End-to-End ML Engineering</p>
+  <h1>From Notebook<span class="gr">to Production</span></h1>
+  <p class="hs">A complete machine learning engineering journey — built from scratch, one concept at a time. No copy-pasting. No magic. Just understanding.</p>
+  <p class="hq">"I understood what the code was doing, but there was so much unfamiliarity."<br><span style="font-style:normal;color:var(--dm);">— the feeling that started this project</span></p>
+  <div class="shi"><span>scroll to explore</span><div class="shb"></div></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHASE 1 -->
+<section class="wrap z reveal">
+  <div class="ph">
+    <div class="pn" style="color:rgba(34,211,238,0.1);">01</div>
+    <div class="pm">
+      <div class="pt" style="color:var(--c1);">Phase 1</div>
+      <div class="pti">The Environment</div>
+      <div class="ps2">Isolate. Reproduce. Install.</div>
+    </div>
+  </div>
+  <p class="si">The foundation before writing a single line of ML logic.</p>
+
+  <div class="mg" style="grid-template-columns:1fr 1fr;">
+    <div class="mc">
+      <div class="mn" style="color:var(--c1);">MODULE 01 · Virtual Environments</div>
+      <div class="mna">Your private kitchen</div>
+      <div class="md">Your system Python is a shared kitchen. A virtual environment is your own isolated workspace. Every project gets one — no version conflicts, no cross-contamination between projects.</div>
+    </div>
+    <div class="mc">
+      <div class="mn" style="color:var(--c1);">MODULE 02 · Package Management</div>
+      <div class="mna">The recipe, not the kitchen</div>
+      <div class="md"><code>requirements.txt</code> lists packages from PyPI. <code>setup.py</code> makes your own code importable. <code>pip install -e .</code> wires them — pip reads <code>setup.py</code> internally.</div>
+    </div>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">environment setup</div>
+    <pre><span class="cm"># Step 1 — create and activate</span>
+python -m venv venv
+source venv/bin/activate          <span class="cm"># Mac/Linux</span>
+venv\Scripts\activate             <span class="cm"># Windows</span>
+
+<span class="cm"># Step 2 — install external packages</span>
+pip install -r requirements.txt
+
+<span class="cm"># Step 3 — make your OWN code importable</span>
+pip install -e .                  <span class="cm"># pip reads setup.py — never run it directly</span></pre>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">setup.py — the bridge between your code and Python's import system</div>
+    <pre><span class="kw">from</span> <span class="fn">setuptools</span> <span class="kw">import</span> find_packages, setup
+
+setup(
+    name=<span class="st">"my_ml_project"</span>,
+    version=<span class="st">"0.1.0"</span>,
+    packages=find_packages(),   <span class="cm"># finds every folder with __init__.py</span>
+)
+
+<span class="cm"># After pip install -e . this works from anywhere:</span>
+<span class="kw">from</span> <span class="fn">src.components.data_ingestion</span> <span class="kw">import</span> DataIngestion</pre>
+  </div>
+
+  <div class="principle">Every project gets its own virtual environment. <code>venv/</code> and <code>egg-info/</code> go in <code>.gitignore</code>. You commit the recipe, not the kitchen.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHASE 2 -->
+<section class="wrap z reveal">
+  <div class="ph">
+    <div class="pn" style="color:rgba(208,105,58,0.1);">02</div>
+    <div class="pm">
+      <div class="pt" style="color:var(--c2);">Phase 2</div>
+      <div class="pti">System & File Architecture</div>
+      <div class="ps2">The skeleton of a real project.</div>
+    </div>
+  </div>
+  <p class="si">Production code talks to the operating system — you need to do it correctly and cross-platform.</p>
+
+  <div class="mg" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="mc">
+      <div class="mn" style="color:var(--c2);">MODULE 03</div>
+      <div class="mna">Modular Structure</div>
+      <div class="md">Components are workers. Pipelines are managers. Notebooks are playgrounds — nothing in <code>src/</code> ever imports from <code>notebooks/</code>.</div>
+    </div>
+    <div class="mc">
+      <div class="mn" style="color:var(--c2);">MODULE 04</div>
+      <div class="mna">File Navigation</div>
+      <div class="md"><code>pathlib</code>'s <code>/</code> is a Python operator, not a string slash. Cross-platform by design. <code>__file__</code> is stable — <code>os.getcwd()</code> is not.</div>
+    </div>
+    <div class="mc">
+      <div class="mn" style="color:var(--c2);">MODULE 05</div>
+      <div class="mna">System Interfacing</div>
+      <div class="md"><code>sys.exc_info()</code> gives you the traceback object — which carries the exact filename and line number of any crash.</div>
+    </div>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">module 04 — cross-platform path handling</div>
+    <pre><span class="kw">from</span> <span class="fn">pathlib</span> <span class="kw">import</span> Path
+<span class="kw">import</span> os, pandas <span class="kw">as</span> pd
+
+<span class="cm"># ❌ Breaks on Windows — hardcoded slash in a string</span>
+path = <span class="st">"artifacts/"</span> + <span class="st">"train.csv"</span>
+
+<span class="cm"># ✅ pathlib — / is a Python operator, adapts to any OS</span>
+path = Path(<span class="st">"artifacts"</span>) / <span class="st">"train.csv"</span>
+
+<span class="cm"># ✅ __file__ always resolves relative to THIS script's location</span>
+<span class="cm">#    regardless of where you run it from in the terminal</span>
+base_dir  = Path(__file__).parent.parent.parent
+data_path = base_dir / <span class="st">"notebooks"</span> / <span class="st">"data"</span> / <span class="st">"stud.csv"</span>
+df        = pd.read_csv(data_path)
+
+<span class="cm"># Always create directories before saving files</span>
+artifact_dir = os.path.dirname(self.ingestion_config.train_data_path)
+os.makedirs(artifact_dir, exist_ok=<span class="kw">True</span>)  <span class="cm"># exist_ok=True = no crash if exists</span></pre>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">module 05 — sys extracts crash location from traceback</div>
+    <pre><span class="kw">import</span> sys
+
+<span class="kw">try</span>:
+    result = <span class="nm">1</span> / <span class="nm">0</span>
+<span class="kw">except</span> Exception <span class="kw">as</span> e:
+    <span class="cm"># exc_info() returns (type, value, traceback_object)</span>
+    _, _, exc_tb = sys.exc_info()
+
+    filename    = exc_tb.tb_frame.f_code.co_filename  <span class="cm"># which file crashed</span>
+    line_number = exc_tb.tb_lineno                    <span class="cm"># which line</span>
+
+    <span class="cm"># This feeds directly into CustomException in Phase 4</span></pre>
+  </div>
+
+  <div class="principle">Never concatenate paths with <code>+</code>. Never hardcode <code>/</code> or <code>\</code>. Always use <code>pathlib</code> or <code>os.path.join()</code> — they handle Mac vs Windows automatically.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHASE 3 -->
+<section class="wrap z reveal">
+  <div class="ph">
+    <div class="pn" style="color:rgba(244,114,182,0.1);">03</div>
+    <div class="pm">
+      <div class="pt" style="color:var(--c3);">Phase 3</div>
+      <div class="pti">Engineering Patterns</div>
+      <div class="ps2">The senior way of organising code.</div>
+    </div>
+  </div>
+  <p class="si">Three patterns that prevent spaghetti at scale.</p>
+
+  <div class="cb reveal">
+    <div class="cbl">Module 06 · OOP</div>
+    <div class="cbh">Object-Oriented Programming</div>
+    <div class="cbb">Classes bundle related data and logic into one self-contained unit. <code>__init__</code> runs automatically on creation. <code>self</code> is the object referring to its own data — like saying "my".</div>
+  </div>
+  <div class="cw reveal">
+    <div class="cl">module 06 — a component as a class</div>
+    <pre><span class="kw">class</span> <span class="fn">DataIngestion</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        <span class="cm"># runs automatically when you do: ingestion = DataIngestion()</span>
+        <span class="cm"># self = "my" — this object's own train_path</span>
+        self.train_path = Path(<span class="st">"artifacts"</span>) / <span class="st">"train.csv"</span>
+        self.test_path  = Path(<span class="st">"artifacts"</span>) / <span class="st">"test.csv"</span>
+
+    <span class="kw">def</span> <span class="fn">run</span>(self):
+        df = pd.read_csv(data_path)
+        df.to_csv(self.train_path)          <span class="cm"># "my train_path"</span>
+        <span class="kw">return</span> self.train_path, self.test_path
+
+ingestion             = DataIngestion()     <span class="cm"># instance — real object from blueprint</span>
+train_path, test_path = ingestion.run()</pre>
+  </div>
+
+  <div class="cb reveal">
+    <div class="cbl">Module 07 · Dataclass</div>
+    <div class="cbh">The Config Pattern</div>
+    <div class="cbb">Config answers <em>WHERE</em>. Logic answers <em>HOW</em>. <code>@dataclass</code> auto-generates <code>__init__</code> so you just declare fields. Changing a file path never requires touching your logic.</div>
+  </div>
+  <div class="cw reveal">
+    <div class="cl">module 07 — separating where from how</div>
+    <pre><span class="kw">from</span> <span class="fn">dataclasses</span> <span class="kw">import</span> dataclass
+
+<span class="cm"># Answers only WHERE — zero logic inside</span>
+<span class="fn">@dataclass</span>
+<span class="kw">class</span> <span class="fn">DataIngestionConfig</span>:
+    raw_data_path:   str = os.path.join(<span class="st">'artifacts'</span>, <span class="st">'raw.csv'</span>)
+    train_data_path: str = os.path.join(<span class="st">'artifacts'</span>, <span class="st">'train.csv'</span>)
+    test_data_path:  str = os.path.join(<span class="st">'artifacts'</span>, <span class="st">'test.csv'</span>)
+
+<span class="cm"># Answers only HOW — zero hardcoded paths</span>
+<span class="kw">class</span> <span class="fn">DataIngestion</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.ingestion_config = DataIngestionConfig()
+        <span class="cm"># self.ingestion_config.train_data_path = 'artifacts/train.csv'</span></pre>
+  </div>
+
+  <div class="cb reveal">
+    <div class="cbl">Module 08 · Utils</div>
+    <div class="cbh">The Utility Pattern — DRY</div>
+    <div class="cbb">If you write the same logic twice, it belongs in <code>utils.py</code>. Don't Repeat Yourself. <code>save_object()</code> and <code>load_object()</code> are written once — used by every component that needs them.</div>
+  </div>
+  <div class="cw reveal">
+    <div class="cl">module 08 — utils.py with dill serialization</div>
+    <pre><span class="kw">import</span> dill   <span class="cm"># extends pickle — handles lambdas and custom classes</span>
+
+<span class="kw">def</span> <span class="fn">save_object</span>(file_path: str, obj) -> <span class="kw">None</span>:
+    <span class="cm"># Used by: DataTransformation (preprocessor), ModelTrainer (model)</span>
+    os.makedirs(os.path.dirname(file_path), exist_ok=<span class="kw">True</span>)
+    <span class="kw">with</span> open(file_path, <span class="st">"wb"</span>) <span class="kw">as</span> f:   <span class="cm"># "wb" = write binary</span>
+        dill.dump(obj, f)
+
+<span class="kw">def</span> <span class="fn">load_object</span>(file_path: str):
+    <span class="cm"># Used by: PredictionPipeline to load model + preprocessor</span>
+    <span class="kw">with</span> open(file_path, <span class="st">"rb"</span>) <span class="kw">as</span> f:   <span class="cm"># "rb" = read binary</span>
+        <span class="kw">return</span> dill.load(f)</pre>
+  </div>
+
+  <div class="principle">Config answers WHERE. Logic answers HOW. Utils removes duplication. Three patterns — every senior ML codebase you'll ever read uses all three.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHASE 4 -->
+<section class="wrap z reveal">
+  <div class="ph">
+    <div class="pn" style="color:rgba(251,191,36,0.1);">04</div>
+    <div class="pm">
+      <div class="pt" style="color:var(--c4);">Phase 4</div>
+      <div class="pti">Observability & Reliability</div>
+      <div class="ps2">If something can go wrong, it will.</div>
+    </div>
+  </div>
+  <p class="si">The safety net around every pipeline run.</p>
+
+  <div class="mg" style="grid-template-columns:1fr 1fr;">
+    <div class="mc">
+      <div class="mn" style="color:var(--c4);">MODULE 09 · Logging</div>
+      <div class="mna">The Black Box Diary</div>
+      <div class="md">Persistent, timestamped record of every event. New file per run. <code>INFO</code> for normal flow. <code>ERROR</code> for crashes. <code>print()</code> disappears — logs survive on disk.</div>
+    </div>
+    <div class="mc">
+      <div class="mn" style="color:var(--c4);">MODULE 10 · Custom Exceptions</div>
+      <div class="mna">The Crash Detective</div>
+      <div class="md">Not just what crashed — exactly which file and line. <code>sys.exc_info()</code> extracts the traceback. Your error message is instantly actionable instead of a wall of text.</div>
+    </div>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">module 09 — logger.py</div>
+    <pre><span class="kw">import</span> logging, os
+<span class="kw">from</span> <span class="fn">datetime</span> <span class="kw">import</span> datetime
+
+<span class="cm"># New timestamped log file for every pipeline run</span>
+LOG_FILE      = f<span class="st">"{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}.log"</span>
+logs_dir      = os.path.join(os.getcwd(), <span class="st">"logs"</span>)
+os.makedirs(logs_dir, exist_ok=<span class="kw">True</span>)
+LOG_FILE_PATH = os.path.join(logs_dir, LOG_FILE)
+
+logging.basicConfig(
+    filename=LOG_FILE_PATH,
+    format=<span class="st">"[%(asctime)s] %(lineno)d %(name)s - %(levelname)s - %(message)s"</span>,
+    level=logging.INFO,   <span class="cm"># INFO and above — filters out DEBUG noise</span>
+)</pre>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">module 10 — exception.py — the crash detective</div>
+    <pre><span class="kw">def</span> <span class="fn">get_error_details</span>(error, error_detail: sys) -> str:
+    _, _, exc_tb = error_detail.exc_info()
+    filename     = exc_tb.tb_frame.f_code.co_filename  <span class="cm"># file</span>
+    line_number  = exc_tb.tb_lineno                    <span class="cm"># line</span>
+    <span class="kw">return</span> f<span class="st">"Error in [{filename}] at line [{line_number}]: [{error}]"</span>
+
+<span class="kw">class</span> <span class="fn">CustomException</span>(Exception):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, error_message, error_detail: sys):
+        super().__init__(str(error_message))
+        self.error_message = get_error_details(error_message, error_detail)
+        logging.error(self.error_message)    <span class="cm"># writes to log immediately</span>
+
+    <span class="kw">def</span> <span class="fn">__str__</span>(self):
+        <span class="kw">return</span> self.error_message            <span class="cm"># controls what gets printed</span>
+
+<span class="cm"># Usage — same pattern in every component:</span>
+<span class="kw">except</span> Exception <span class="kw">as</span> e:
+    <span class="kw">raise</span> CustomException(e, sys)</pre>
+  </div>
+
+  <div class="principle">The last INFO log before an ERROR tells you exactly how far the pipeline got before it crashed. That's your black box doing its job.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHASE 5 -->
+<section class="wrap z reveal">
+  <div class="ph">
+    <div class="pn" style="color:rgba(208,105,58,0.1);">05</div>
+    <div class="pm">
+      <div class="pt" style="color:var(--c5);">Phase 5</div>
+      <div class="pti">The MLOps Pipeline</div>
+      <div class="ps2">Everything comes together into a working factory.</div>
+    </div>
+  </div>
+  <p class="si">13 modules. 5 phases. One end-to-end pipeline.</p>
+
+  <div class="pipe reveal">
+    <div class="pip"><div class="pipl" style="color:var(--c5);">source</div><div class="pipn">Raw CSV</div></div>
+    <div class="pia">→</div>
+    <div class="pip"><div class="pipl" style="color:var(--c5);">mod 11</div><div class="pipn">Data Ingestion</div></div>
+    <div class="pia">→</div>
+    <div class="pip"><div class="pipl" style="color:var(--c5);">mod 13</div><div class="pipn">Transformation</div></div>
+    <div class="pia">→</div>
+    <div class="pip"><div class="pipl" style="color:var(--c5);">mod 12</div><div class="pipn">Model Trainer</div></div>
+    <div class="pia">→</div>
+    <div class="pip" style="border-color:var(--c5);"><div class="pipl" style="color:var(--c5);">artifact</div><div class="pipn" style="color:var(--c5);">model.pkl</div></div>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">module 11 — data ingestion saves three artifacts</div>
+    <pre><span class="fn">@dataclass</span>
+<span class="kw">class</span> <span class="fn">DataIngestionConfig</span>:
+    raw_data_path:   str = os.path.join(<span class="st">'artifacts'</span>, <span class="st">'raw.csv'</span>)
+    train_data_path: str = os.path.join(<span class="st">'artifacts'</span>, <span class="st">'train.csv'</span>)
+    test_data_path:  str = os.path.join(<span class="st">'artifacts'</span>, <span class="st">'test.csv'</span>)
+
+<span class="kw">def</span> <span class="fn">initiate_data_ingestion</span>(self):
+    df = pd.read_csv(data_path)
+    df.to_csv(self.ingestion_config.raw_data_path, index=<span class="kw">False</span>)  <span class="cm"># checkpoint</span>
+    train_set, test_set = train_test_split(df, test_size=<span class="nm">0.2</span>, random_state=<span class="nm">42</span>)
+    <span class="cm"># random_state=42 — same split every single run, reproducible</span>
+    train_set.to_csv(self.ingestion_config.train_data_path, index=<span class="kw">False</span>)
+    test_set.to_csv(self.ingestion_config.test_data_path,   index=<span class="kw">False</span>)
+    <span class="kw">return</span> self.ingestion_config.train_data_path, self.ingestion_config.test_data_path</pre>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">module 13 — the most critical correctness decision in the pipeline</div>
+    <pre><span class="cm"># ✅ CORRECT — preprocessor learns statistics from training data ONLY</span>
+X_train_arr = preprocessor.<span class="ok">fit_transform</span>(X_train)  <span class="cm"># learns mean/std/categories AND applies</span>
+X_test_arr  = preprocessor.<span class="ok">transform</span>(X_test)        <span class="cm"># only applies — never fits</span>
+
+<span class="cm"># ❌ DATA LEAKAGE — preprocessor learns from test data</span>
+<span class="cm"># Your evaluation metrics become lies. Model appears better than it is.</span>
+X_test_arr  = preprocessor.<span class="er">fit_transform</span>(X_test)    <span class="cm"># NEVER do this</span>
+
+<span class="cm"># Concatenate transformed features with target column</span>
+train_arr = np.c_[X_train_arr, np.array(y_train)]   <span class="cm"># [features | target]</span>
+test_arr  = np.c_[X_test_arr,  np.array(y_test)]</pre>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">training pipeline — the manager calling workers in sequence</div>
+    <pre><span class="kw">class</span> <span class="fn">TrainingPipeline</span>:
+    <span class="kw">def</span> <span class="fn">run_pipeline</span>(self):          <span class="cm"># no __init__ needed — no config, no artifacts</span>
+        <span class="kw">try</span>:
+            ingestion              = DataIngestion()
+            train_path, test_path  = ingestion.initiate_data_ingestion()
+
+            transformation         = DataTransformation()
+            train_arr, test_arr, _ = transformation.initiate_data_transformation(
+                                         train_path, test_path)
+
+            trainer                = ModelTrainer()
+            r2_score               = trainer.initiate_model_trainer(train_arr, test_arr)
+            <span class="kw">return</span> r2_score
+        <span class="kw">except</span> Exception <span class="kw">as</span> e:
+            <span class="kw">raise</span> CustomException(e, sys)</pre>
+  </div>
+
+  <div class="cw reveal">
+    <div class="cl">prediction pipeline — inference at request time</div>
+    <pre><span class="kw">class</span> <span class="fn">PredictPipeline</span>:
+    <span class="kw">def</span> <span class="fn">predict</span>(self, features):
+        model        = load_object(self.predict_config.model_path)
+        preprocessor = load_object(self.predict_config.preprocessor_path)
+
+        <span class="cm"># transform() only — preprocessor is already fitted from training</span>
+        <span class="cm"># calling fit_transform() here would be data leakage</span>
+        transformed  = preprocessor.transform(features)
+        <span class="kw">return</span> model.predict(transformed)</pre>
+  </div>
+
+  <div style="margin:2rem 0;">
+    <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--dm);margin-bottom:1rem;">Artifacts produced by the full run</div>
+    <div class="cb" style="padding:1rem 1.5rem;">
+      <div class="ar"><div class="ai" style="background:rgba(34,211,238,0.1);color:var(--c1);">◻</div><div class="an">raw.csv · train.csv · test.csv</div><div class="ad">Data ingestion checkpoints</div></div>
+      <div class="ar"><div class="ai" style="background:rgba(208,105,58,0.1);color:var(--c2);">⬡</div><div class="an">preprocessor.pkl</div><div class="ad">Fitted ColumnTransformer — carries all learned statistics</div></div>
+      <div class="ar"><div class="ai" style="background:rgba(21,128,61,0.1);color:var(--c5);">◈</div><div class="an">model.pkl</div><div class="ad">Best model serialized with dill · Linear Regression · R²=0.88</div></div>
+    </div>
+  </div>
+
+  <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--dm);margin-bottom:1rem;margin-top:2.5rem;">Model evaluation — all 7 models trained with GridSearchCV</div>
+  <div class="sg reveal">
+    <div class="sca wi"><div class="smo">Linear Regression</div><div class="sva" style="color:var(--acb);">0.88</div><div class="sba"><div class="sfi" style="width:88%;"></div></div><div class="sbad">↑ best model</div></div>
+    <div class="sca"><div class="smo">Gradient Boosting</div><div class="sva">0.87</div><div class="sba"><div class="sfi" style="width:87%;"></div></div></div>
+    <div class="sca"><div class="smo">CatBoost</div><div class="sva">0.86</div><div class="sba"><div class="sfi" style="width:86%;"></div></div></div>
+    <div class="sca"><div class="smo">AdaBoost</div><div class="sva">0.85</div><div class="sba"><div class="sfi" style="width:85%;"></div></div></div>
+    <div class="sca"><div class="smo">XGBoost</div><div class="sva">0.85</div><div class="sba"><div class="sfi" style="width:85%;"></div></div></div>
+    <div class="sca"><div class="smo">Random Forest</div><div class="sva">0.85</div><div class="sba"><div class="sfi" style="width:85%;"></div></div></div>
+  </div>
+
+  <div class="principle">Linear Regression beat every ensemble model. The relationship between features and math score is largely linear. More complex doesn't always mean better.</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PROOF OF WORK -->
+<div id="proof" class="z" style="max-width:880px;margin:0 auto;padding:6rem 2rem 10rem;">
+  <p style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--dm);margin-bottom:0.75rem;">Proof of work</p>
+  <h2 style="font-family:var(--disp);font-size:clamp(2rem,4vw,3rem);font-weight:800;line-height:1.1;margin-bottom:1rem;">Try it yourself.</h2>
+  <p style="color:var(--mt);font-size:14px;max-width:500px;line-height:1.8;">The trained Linear Regression model and fitted preprocessor are both live. Enter a student's details — the pipeline predicts their math score.</p>
+
+  <div class="pgrid">
+
+    <!-- GITHUB — above, left, SpotlightCard -->
+    <div class="sc reveal" id="ghc">
+      <div class="scg" id="ghg"></div>
+      <div style="padding:2rem;">
+        <div style="width:42px;height:42px;border-radius:11px;background:rgba(208,105,58,0.1);border:1px solid var(--bdh);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;font-size:18px;">⌥</div>
+        <div style="font-family:var(--disp);font-size:20px;font-weight:700;margin-bottom:0.5rem;">Source Code</div>
+        <p style="color:var(--mt);font-size:13px;line-height:1.75;margin-bottom:1.5rem;">The full pipeline — every component, config, utility, and pipeline file — is open source. Read the annotated code, follow the README, build it yourself from scratch.</p>
+        <a href="https://github.com/sidhant-mani-tiwari/student-performance-index" class="btn btn-o" target="_blank">view on github →</a>
+      </div>
+    </div>
+
+    <!-- PREDICTION — right, SpotlightCard with cyan spotlight -->
+    <div class="sc reveal" id="prc" style="border-color:var(--bdh);">
+      <div class="scg" id="prg"></div>
+      <div style="padding:2rem;">
+        <div style="font-family:var(--disp);font-size:20px;font-weight:700;margin-bottom:1.25rem;">Predict Math Score</div>
+        <form action="/predictdata" method="POST">
+          <div class="fg2">
+            <div class="fg">
+              <label>Gender</label>
+              <select name="gender"><option value="male">Male</option><option value="female">Female</option></select>
+            </div>
+            <div class="fg">
+              <label>Race / Ethnicity</label>
+              <select name="ethnicity">
+                <option value="group A">Group A</option><option value="group B">Group B</option>
+                <option value="group C">Group C</option><option value="group D">Group D</option>
+                <option value="group E">Group E</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Parental Education</label>
+              <select name="parental_level_of_education">
+                <option value="some high school">Some High School</option>
+                <option value="high school">High School</option>
+                <option value="some college">Some College</option>
+                <option value="associate's degree">Associate's Degree</option>
+                <option value="bachelor's degree">Bachelor's Degree</option>
+                <option value="master's degree">Master's Degree</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Lunch</label>
+              <select name="lunch"><option value="standard">Standard</option><option value="free/reduced">Free / Reduced</option></select>
+            </div>
+            <div class="fg">
+              <label>Test Prep Course</label>
+              <select name="test_preparation_course"><option value="none">None</option><option value="completed">Completed</option></select>
+            </div>
+            <div class="fg">
+              <label>Reading Score</label>
+              <input type="number" name="reading_score" min="0" max="100" placeholder="0–100" required>
+            </div>
+            <div class="fg" style="grid-column:1/-1;">
+              <label>Writing Score</label>
+              <input type="number" name="writing_score" min="0" max="100" placeholder="0–100" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-p">run prediction →</button>
+        </form>
+        {% if results is defined %}
+        <div class="rb on">
+          <div class="rl">predicted math score</div>
+          <div class="rv">{{ results | round(1) }}</div>
+          <div class="rs">out of 100 · Linear Regression · R² = 0.88</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+  <p style="text-align:center;color:var(--dm);font-size:11px;margin-top:4rem;letter-spacing:0.1em;">Built concept by concept · 13 modules · 5 phases · 1 working pipeline</p>
+</div>
+
+<script>
+// GRID BACKGROUND
+(function(){
+  const cv=document.getElementById('gc'),cx=cv.getContext('2d'),sq=40;
+  let W,H,cols,rows,ox=0,oy=0,mouse=null;
+  const ops=new Map();
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;cols=Math.ceil(W/sq)+2;rows=Math.ceil(H/sq)+2;}
+  window.addEventListener('resize',resize);resize();
+  document.addEventListener('mousemove',e=>{
+    const offX=((ox%sq)+sq)%sq,offY=((oy%sq)+sq)%sq;
+    mouse={x:Math.floor((e.clientX-offX)/sq),y:Math.floor((e.clientY-offY)/sq)};
+  });
+  document.addEventListener('mouseleave',()=>{mouse=null;});
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    const offX=((ox%sq)+sq)%sq,offY=((oy%sq)+sq)%sq;
+    const tg=new Map();if(mouse)tg.set(`${mouse.x},${mouse.y}`,1);
+    for(const[k]of tg)if(!ops.has(k))ops.set(k,0);
+    for(const[k,v]of ops){const t=tg.get(k)||0,n=v+(t-v)*0.12;if(n<0.004)ops.delete(k);else ops.set(k,n);}
+    for(let c=-1;c<cols;c++){for(let r=-1;r<rows;r++){
+      const sx=c*sq+offX,sy=r*sq+offY,k=`${c},${r}`,a=ops.get(k);
+      if(a){cx.globalAlpha=a;cx.fillStyle='#e8ddd4';cx.fillRect(sx,sy,sq,sq);cx.globalAlpha=1;}
+      cx.strokeStyle='#e0d5cc';cx.lineWidth=0.5;cx.strokeRect(sx,sy,sq,sq);
+    }}
+    const g=cx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.sqrt(W*W+H*H)/2);
+    g.addColorStop(0,'rgba(250,248,245,0)');g.addColorStop(1,'#faf8f5');
+    cx.fillStyle=g;cx.fillRect(0,0,W,H);
+    ox=(ox-0.18+sq)%sq;oy=(oy-0.18+sq)%sq;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// SPOTLIGHT CARDS — implements SpotlightCard pattern
+(function(){
+  function spotlight(cardId,glowId,color){
+    const card=document.getElementById(cardId),glow=document.getElementById(glowId);
+    if(!card||!glow)return;
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      glow.style.background=`radial-gradient(circle at ${e.clientX-r.left}px ${e.clientY-r.top}px, ${color}, transparent 80%)`;
+    });
+    card.addEventListener('mouseenter',()=>{glow.style.opacity='0.6';});
+    card.addEventListener('mouseleave',()=>{glow.style.opacity='0';});
+  }
+  spotlight('ghc','ghg','rgba(208,105,58,0.15)');
+  spotlight('prc','prg','rgba(208,105,58,0.12)');
+})();
+
+// SCROLL REVEAL
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('on');obs.unobserve(x.target);}});},{threshold:0.08});
+  els.forEach(el=>obs.observe(el));
+})();
+
+// HIDE SKIP BUTTON WHEN AT BOTTOM
+(function(){
+  const btn=document.getElementById('skip'),anchor=document.getElementById('proof');
+  btn.style.transition='opacity 0.3s ease';
+  new IntersectionObserver(e=>{
+    btn.style.opacity=e[0].isIntersecting?'0':'1';
+    btn.style.pointerEvents=e[0].isIntersecting?'none':'auto';
+  },{threshold:0.1}).observe(anchor);
+})();
+</script>
+</body>
+</html>
